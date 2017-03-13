@@ -18,11 +18,21 @@ func mains() {
 
 	r.GET("/", action.Index)
 
+	//admin auth check
+	authMiddleWare := middleware.CheckAdminAuth()
+	r.POST("/login", authMiddleWare.LoginHandler)
+	admin := r.Group("/admin")
+	admin.Use(authMiddleWare.MiddlewareFunc())
+	{
+		admin.GET("/", action.AdminHome)
+	}
+
+	//rest auth check
 	rest := r.Group("/rest")
 	rest.Use(middleware.CheckRestAuth)
 	{
 		rest.GET("/ping", action.Ping)
 	}
 
-	r.Run() // listen and serve on 0.0.0.0:8080
+	r.Run(":4000")
 }
