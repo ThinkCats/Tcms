@@ -1,41 +1,79 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/pjebs/restgate"
-	"gopkg.in/appleboy/gin-jwt.v2"
 	"gopkg.in/gin-gonic/gin.v1"
 )
 
-//CheckAdminAuth check admin auth
-func CheckAdminAuth() *jwt.GinJWTMiddleware {
-	authMiddleWare := &jwt.GinJWTMiddleware{
-		Realm:      "TestZone",
-		Key:        []byte("myKey"),
-		Timeout:    time.Hour,
-		MaxRefresh: time.Hour,
-		Authenticator: func(userId string, password string, c *gin.Context) (string, bool) {
-			if (userId == "admin" && password == "admin") || (userId == "test" && password == "test") {
-				return userId, true
-			}
-			return userId, false
-		},
-		Authorizator: func(userId string, c *gin.Context) bool {
-			if userId == "admin" {
-				return true
-			}
-			return false
-		},
-		Unauthorized: func(c *gin.Context, code int, msg string) {
-			c.HTML(http.StatusNonAuthoritativeInfo, "401.tmpl", gin.H{
-				"title": "Auth Error",
+//LoginEntity Login form entity
+type LoginEntity struct {
+	Username string `form:"username" json:"username" binding:"required"`
+	Password string `form:"password" json:"password" binding:"required"`
+	jwt.StandardClaims
+}
+
+//CheckLogin check user login and set token info
+func CheckLogin(c *gin.Context) {
+	//TODO check username and password
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+	if username == "admin" && password == "admin" {
+		claims := &LoginEntity{
+			"admin",
+			"123456",
+			jwt.StandardClaims{
+				ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+			},
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		t, err := token.SignedString([]byte("secret"))
+		if err != nil {
+			c.JSON(401, gin.H{
+				"message": "error",
 			})
-		},
-		TokenLookup: "header:Authorization",
+		}
+		c.SetCookie("token", t, 1000, "/", "/", true, true)
+		c.JSON(http.StatusOK, gin.H{
+			"x-token": t,
+		})
+	} else {
+		c.JSON(401, gin.H{
+			"message": "not access",
+		})
 	}
-	return authMiddleWare
+}
+
+//CheckToken check token info
+func CheckToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		fmt.Println("-----.....")
+		token, _ := c.Cookie("token")
+		fmt.Println("token from url:", token)
+		t, err := jwt.ParseWithClaims(token, &LoginEntity{}, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method %v", token.Header["alg"])
+			}
+			return []byte("secret"), nil
+		})
+		if err != nil {
+			fmt.Println(err)
+		}
+		if claims, ok := t.Claims.(*LoginEntity); ok && t.Valid {
+			fmt.Println("Entity:", claims)
+		} else {
+			fmt.Println("Cant find entity")
+			c.HTML(401, "index.tmpl", gin.H{
+				"title": "not a valid token",
+			})
+			c.Abort()
+		}
+		c.Next()
+	}
 }
 
 //CheckRestAuth check rest api auth

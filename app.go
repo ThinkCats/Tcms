@@ -19,10 +19,9 @@ func mains() {
 	r.GET("/", action.Index)
 
 	//admin auth check
-	authMiddleWare := middleware.CheckAdminAuth()
-	r.POST("/login", authMiddleWare.LoginHandler)
+	r.POST("/login", middleware.CheckLogin)
 	admin := r.Group("/admin")
-	admin.Use(authMiddleWare.MiddlewareFunc())
+	admin.Use(middleware.CheckToken())
 	{
 		admin.GET("/", action.AdminHome)
 	}
