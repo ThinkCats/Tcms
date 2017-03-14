@@ -17,6 +17,7 @@ func mains() {
 	r.LoadHTMLGlob("template/*")
 
 	r.GET("/", action.Index)
+	r.GET("/login.html", action.Login)
 
 	//admin auth check
 	r.POST("/login", middleware.CheckLogin)

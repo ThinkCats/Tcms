@@ -1,7 +1,6 @@
 package action
 
 import (
-	"fmt"
 	"net/http"
 	"tcms/src/dao"
 
@@ -10,12 +9,15 @@ import (
 
 //Index action
 func Index(c *gin.Context) {
-
-	fmt.Println("index...")
 	dao.QueryUser()
 	c.HTML(http.StatusOK, "index.tmpl", gin.H{
 		"title": "hi",
 	})
+}
+
+//Login login view
+func Login(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.tmpl", nil)
 }
 
 //Ping something

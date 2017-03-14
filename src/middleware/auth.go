@@ -37,13 +37,17 @@ func CheckLogin(c *gin.Context) {
 				"message": "error",
 			})
 		}
-		c.SetCookie("token", t, 1000, "/", "/", true, true)
-		c.JSON(http.StatusOK, gin.H{
-			"x-token": t,
-		})
+		cookie := &http.Cookie{
+			Name:   "token",
+			Value:  t,
+			Path:   "/",
+			MaxAge: 1000,
+		}
+		http.SetCookie(c.Writer, cookie)
+		http.Redirect(c.Writer, c.Request, "/admin", 302)
 	} else {
-		c.JSON(401, gin.H{
-			"message": "not access",
+		c.HTML(401, "login.tmpl", gin.H{
+			"title": "login error",
 		})
 	}
 }
@@ -51,9 +55,7 @@ func CheckLogin(c *gin.Context) {
 //CheckToken check token info
 func CheckToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("-----.....")
 		token, _ := c.Cookie("token")
-		fmt.Println("token from url:", token)
 		t, err := jwt.ParseWithClaims(token, &LoginEntity{}, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method %v", token.Header["alg"])
@@ -61,14 +63,15 @@ func CheckToken() gin.HandlerFunc {
 			return []byte("secret"), nil
 		})
 		if err != nil {
-			fmt.Println(err)
+			c.HTML(401, "login.tmpl", gin.H{
+				"message": "not a valid token",
+			})
 		}
 		if claims, ok := t.Claims.(*LoginEntity); ok && t.Valid {
 			fmt.Println("Entity:", claims)
 		} else {
-			fmt.Println("Cant find entity")
-			c.HTML(401, "index.tmpl", gin.H{
-				"title": "not a valid token",
+			c.HTML(401, "login.tmpl", gin.H{
+				"message": "not a valid token",
 			})
 			c.Abort()
 		}
