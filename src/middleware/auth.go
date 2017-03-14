@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"tcms/src/dao"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/pjebs/restgate"
 	"gopkg.in/gin-gonic/gin.v1"
@@ -22,7 +24,13 @@ func CheckLogin(c *gin.Context) {
 	//TODO check username and password
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	if username == "admin" && password == "admin" {
+	user, err := dao.QueryUser(username)
+	if err != nil {
+		c.HTML(401, "login.tmpl", gin.H{
+			"message": "login error, username may not existed",
+		})
+	}
+	if password == user.Password {
 		claims := &LoginEntity{
 			"admin",
 			"123456",
@@ -47,7 +55,7 @@ func CheckLogin(c *gin.Context) {
 		http.Redirect(c.Writer, c.Request, "/admin", 302)
 	} else {
 		c.HTML(401, "login.tmpl", gin.H{
-			"title": "login error",
+			"message": "login error",
 		})
 	}
 }

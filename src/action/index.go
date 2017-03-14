@@ -1,6 +1,7 @@
 package action
 
 import (
+	"fmt"
 	"net/http"
 	"tcms/src/dao"
 
@@ -9,7 +10,11 @@ import (
 
 //Index action
 func Index(c *gin.Context) {
-	dao.QueryUser()
+	user, err := dao.QueryUser("wang")
+	if err != nil {
+		println(err)
+	}
+	fmt.Println("get user password:", user.Password)
 	c.HTML(http.StatusOK, "index.tmpl", gin.H{
 		"title": "hi",
 	})
