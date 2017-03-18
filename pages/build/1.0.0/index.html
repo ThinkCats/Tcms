@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="stylesheet" type="text/css" href="./index.css" />
+  <!--[if lt IE 10]>
+    <script src="https://as.alipayobjects.com/g/component/??console-polyfill/0.2.2/index.js,es5-shim/4.5.7/es5-shim.min.js,es5-shim/4.5.7/es5-sham.min.js,html5shiv/3.7.2/html5shiv.min.js,media-match/2.0.2/media.match.min.js"></script>
+    <![endif]-->
+  <style>
+    #root {
+      max-width: 1080px;
+      margin: auto;
+    }
+
+  </style>
+</head>
+<script src="http://assets.souche.com/assets/js/lib/jquery-1.9.1.min.js?t=20151102"></script>
+<script src="http://assets.souche.com/shop/assets/order_manage/util/AuthZ/AuthZ.js"></script>
+<script src="//cdn.bootcss.com/react/15.0.2/react.js"></script>
+<script src="//cdn.bootcss.com/react/15.0.2/react-dom.js"></script>
+<script src="//cdn.bootcss.com/react-router/2.0.1/ReactRouter.js"></script>
+<link href="//cdn.bootcss.com/antd/2.6.4/antd.css" rel="stylesheet">
+<script src="//cdn.bootcss.com/antd/2.6.4/antd.min.js"></script>
+<script>
+  AuthZ.config('http://devsso.souche-inc.com/httpApi/getAuthZ.jsonp',true,'jsonp');
+</script>
+<body>
+  <div id="root"></div>
+</body>
+<script>
+  window.SERVER_URL = 'http://loan.souche-inc.com:8080'
+</script>
+<script src="./common.js"></script>
+<script src="./index.js"></script>
+
+
+</html>
